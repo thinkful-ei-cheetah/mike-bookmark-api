@@ -8,12 +8,21 @@ const { NODE_ENV } = require('./config')
 const app = express()
 
 // const morganOption = (process.env.NODE_ENV === 'production')
-const morganOption = (NODE_ENV === 'production')  
-  ? 'tiny'
-  : 'common';
+const morganOption = NODE_ENV === 'production' ? 'tiny' : 'common';
 
+const whitelist = ['http://localhost:3000', 'http://my-project.com'];
+const options = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+};
+  
+app.use(cors(options));
 app.use(morgan(morganOption))
-app.use(cors())
 app.use(helmet())
 
 app.get('/', (req, res) => {

@@ -6,19 +6,52 @@ const store = require('../store')
 const bookmarksRouter = express.Router()
 const bodyParser = express.json()
 
+const bookmarks = [
+  {
+    title: "Google",
+    rating: 5,
+    url: "http://google.com",
+    description: "The best search engine ever.",
+    id: 1,
+  },
+  {
+    title: "IMDB",
+    rating: 5,
+    url: "http://imdb.com",
+    description: "The best movie search engine ever.",
+    id: 2,
+  },
+  {
+    title: "Facebook",
+    rating: 5,
+    url: "http://facebook.com",
+    description: "The best time sink ever.",
+    id: 3,
+  }
+]
+
 bookmarksRouter
   .route('/bookmarks')
   .get((req, res) => {
-    res.json(store.bookmarks)
+    res.json(bookmarks)
   })
   .post(bodyParser, (req, res) => {
-    const { title, url, desc='', rating='5'} = req.body;
+    // const { title, url, desc='', rating='5'} = req.body;
+    const { title, rating, url, description } = req.body;
+    const parsedRating = parseInt(rating);
 
     if(!title) {
       logger.error('Title is required');
       return res
         .status(400)
         .send('Invalid data');
+    }
+
+    if(!rating) {
+      logger.error('Rating is required')
+      return res
+        .status(400)
+        .send('Invalid Data');
     }
 
     if(!url) {
@@ -28,14 +61,21 @@ bookmarksRouter
         .send('Invalid data');
     }
 
+    if(!description) {
+      logger.error('Description is required')
+      return res
+        .status(400)
+        .send('Invalid Data');
+    }
+
     const id = uuid();
 
     const bookmark = {
       id,
       title,
+      rating: parsedRating,
       url,
-      desc,
-      rating
+      description
     };
 
     bookmarks.push(bookmark);
@@ -44,7 +84,7 @@ bookmarksRouter
 
     res
       .status(200)
-      .location(`/bookmarks/${id}`)
+      .location(`http://localhost:8000/bookmarks/${id}`)
       .json(bookmark);
   });
 
@@ -52,7 +92,8 @@ bookmarksRouter
   .route('/bookmarks/:id')
   .get((req, res) => {
     const { id } = req.params;
-    const bookmark = store.bookmarks.find(bookmark => bookmark.id === id);
+    const parseId = parseInt(id);
+    const bookmark = bookmarks.find(bookmark => bookmark.id === parseId);
 
     if (!bookmark) {
       logger.error(`Bookmark with id ${id} not found.`)
@@ -61,13 +102,11 @@ bookmarksRouter
         .send('Bookmark Not Found')
     }
 
-    res.json(bookmark)
+    res.json(bookmarks)
   })
-
   .delete((req, res) => {
-    const { id } = req.params
-
-    const bookmarkIndex = store.bookmarks.findIndex(bookmark => bookmark.id === id)
+    const { id } = req.params;
+    const bookmarkIndex = bookmarks.findIndex(bookmark => bookmark.id === id)
 
     if (bookmarkIndex === -1) {
       logger.error(`Bookmark with id ${id} not found.`)
@@ -84,4 +123,4 @@ bookmarksRouter
       .end()
   })
 
-module.exports = bookmarksRouter
+module.exports = bookmarksRouter;

@@ -5,7 +5,7 @@ const logger = require('../logger');
 const bookmarksRouter = express.Router();
 const bodyParser = express.json();
 
-const bookmarks = [
+const store = [
   {
     title: "Google",
     rating: 5,
@@ -32,10 +32,9 @@ const bookmarks = [
 bookmarksRouter
   .route('/bookmarks')
   .get((req, res) => {
-    res.json(bookmarks)
+    res.json(store)
   })
   .post(bodyParser, (req, res) => {
-    // const { title, url, desc='', rating='5'} = req.body;
     const { title, rating, url, description } = req.body;
     const parsedRating = parseInt(rating);
 
@@ -68,7 +67,6 @@ bookmarksRouter
     }
 
     const id = uuid();
-
     const bookmark = {
       id,
       title,
@@ -77,7 +75,7 @@ bookmarksRouter
       description
     };
 
-    bookmarks.push(bookmark);
+    store.push(bookmark);
 
     logger.info(`Bookmark with id ${id} created`);
 
@@ -92,7 +90,7 @@ bookmarksRouter
   .get((req, res) => {
     const { id } = req.params;
     const parseId = parseInt(id);
-    const bookmark = bookmarks.find(bookmark => bookmark.id === parseId);
+    const bookmark = store.find(bookmark => bookmark.id === parseId);
 
     if (!bookmark) {
       logger.error(`Bookmark with id ${id} not found.`)
@@ -101,7 +99,7 @@ bookmarksRouter
         .send('Bookmark Not Found')
     }
 
-    res.json(bookmarks)
+    res.json(store)
   })
   .delete((req, res) => {
     const { id } = req.params;
@@ -114,7 +112,7 @@ bookmarksRouter
         .send('Bookmark Not Found')
     }
 
-    store.bookmarks.splice(bookmarkIndex, 1)
+    store.splice(bookmarkIndex, 1)
 
     logger.info(`Bookmark with id ${id} deleted.`)
     res
